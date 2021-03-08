@@ -1,0 +1,6 @@
+1. Able to eliminate routes with cycles (A->B->A->D)
+2. Able to eliminate duplicate routes
+3. Minimal traversal of graph while executing the query
+4. Before midnight landing case solved
+5. Used profile to come up with optimal data model with required indexes
+6. Index creation and writing query according to presence of index gave a huge performance boost

@@ -1,0 +1,3 @@
+create index on :AIRPORT_DATE_DESTINATION(airport, date, destination);
+create index on :FLIGHT(origin, destination, originDate);
+create index on :AIRPORT_DATE(airport, date);

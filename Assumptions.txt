@@ -1,0 +1,1 @@
+1. Layover duration at an intermediate airport of more than 6 hours is not to be considered.

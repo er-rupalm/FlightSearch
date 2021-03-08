@@ -1,0 +1,27 @@
+profile match (origin:AIRPORT_DATE_DESTINATION)-[:ORIGIN_OF]->(flight:FLIGHT)
+where origin.airport = "AAA"
+    and origin.destination = "DDD"
+    and origin.date = date("2022-01-01")
+return flight.origin + "(" + flight.originTime + ")" + "->" + flight.destination + "(" + flight.destinationTime + ")" as ROUTE, flight.cost as COST
+union all
+match (origin:AIRPORT_DATE)-[:HAS_FLIGHT_TO]->(:AIRPORT_DATE_DESTINATION)-[:ORIGIN_OF]->(flight1:FLIGHT)-[:LANDS_AT]->(:AIRPORT_DATE)-[:HAS_FLIGHT_TO]->(:AIRPORT_DATE_DESTINATION)-[:ORIGIN_OF]->(flight2:FLIGHT)-[:LANDS_AT]->(destinationDate:AIRPORT_DATE)
+where origin.airport = "AAA"
+    and destinationDate.airport = "DDD"
+    and origin.date = date("2022-01-01")
+    and (flight1.destinationTime.epochMillis + (3600*1000)) <= flight2.originTime.epochMillis
+    and destinationDate.date = date(flight2.destinationTime)
+    and (flight1.destinationTime.epochMillis + (6*3600*1000)) >= flight2.originTime.epochMillis
+return flight1.origin + "(" + flight1.originTime + ")" + "->" + flight1.destination + "(" + flight1.destinationTime + ", " + flight2.originTime + ")" + "->" + flight2.destination + "(" + flight2.destinationTime + ")" as ROUTE, flight1.cost + flight2.cost as COST
+union all
+match (origin:AIRPORT_DATE)-[:HAS_FLIGHT_TO]->(:AIRPORT_DATE_DESTINATION)-[:ORIGIN_OF]->(flight1:FLIGHT)-[:LANDS_AT]->(airportDate1:AIRPORT_DATE)-[:HAS_FLIGHT_TO]->(:AIRPORT_DATE_DESTINATION)-[:ORIGIN_OF]->(flight2:FLIGHT)-[:LANDS_AT]->(airportDate2:AIRPORT_DATE)-[:HAS_FLIGHT_TO]->(:AIRPORT_DATE_DESTINATION)-[:ORIGIN_OF]->(flight3:FLIGHT)-[:LANDS_AT]->(destinationDate:AIRPORT_DATE)
+where origin.airport = "AAA"
+    and destinationDate.airport = "DDD"
+    and origin.date = date("2022-01-01")
+    and origin.airport <> airportDate2.airport
+    and airportDate1.airport <> destinationDate.airport
+    and (flight1.destinationTime.epochMillis + (3600*1000)) <= flight2.originTime.epochMillis
+    and (flight2.destinationTime.epochMillis + (3600*1000)) <= flight3.originTime.epochMillis
+    and destinationDate.date = date(flight3.destinationTime)
+    and (flight1.destinationTime.epochMillis + (6*3600*1000)) >= flight2.originTime.epochMillis
+    and (flight2.destinationTime.epochMillis + (6*3600*1000)) >= flight3.originTime.epochMillis
+return flight1.origin + "(" + flight1.originTime + ")" + "->" + flight1.destination + "(" + flight1.destinationTime + ", " + flight2.originTime + ")" + "->" + flight2.destination + "(" + flight2.destinationTime +", " + flight3.originTime + ")" + "->" + flight3.destination + "(" + flight3.destinationTime + ")" as ROUTE, flight1.cost + flight2.cost + flight3.cost as COST

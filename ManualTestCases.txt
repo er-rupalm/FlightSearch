@@ -1,0 +1,8 @@
+1. No path with cycles should be selected (Eg: A->C->A->D)
+2. Intermediate hops should have atleast 1 hr difference between landing and takeoff
+3. Next day flights from intermediate airports should get selected
+4. Departure time of flights in a selected route should be in increasing order
+5. All the routes with 1 , 2, 3 hops are getting selected
+6. Verified the no route returned case as well
+7. Before Midnight landing at intermediate airport should pick up next day early morning flight
+8. Route with layover of more than 6 hrs should not be selected

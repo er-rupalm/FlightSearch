@@ -1,0 +1,40 @@
+LOAD CSV WITH HEADERS FROM "file:///Provider4.csv" as row
+FIELDTERMINATOR ","
+WITH row, 
+    datetime({epochmillis: apoc.date.parse(row.`Departure Time`, "ms", "MM/dd/yyyy HH:mm:ss")}) as ot,
+    datetime({epochmillis: apoc.date.parse(row.`Destination Time`, "ms", "MM/dd/yyyy HH:mm:ss")}) as dt,
+    "Provider4" as prd
+MERGE (originAirport:AIRPORT {name: row.Origin})
+MERGE (destinationAirport:AIRPORT {name: row.Destination})
+CREATE (flight:FLIGHT {
+    name: row.Origin + "-" + row.Destination,
+    origin: row.Origin, 
+    destination: row.Destination, 
+    originTime: ot,
+    destinationTime: dt,
+    originDate: date(ot),
+    cost: toFloat(replace(row.Price, '$', '')), 
+    provider: prd})
+MERGE (originAirportDate:AIRPORT_DATE {
+    name: row.Origin + "-" + date(ot),
+    airport: row.Origin, 
+    date: date(ot)})
+MERGE (destinationAirportDate:AIRPORT_DATE {
+    name: row.Destination + "-" + date(dt),
+    airport: row.Destination, 
+    date: date(dt)})
+MERGE (destinationAirportNextDate:AIRPORT_DATE {
+    name: row.Destination + "-" + (date(dt) + Duration({days: 1})),
+    airport: row.Destination, 
+    date: date(dt) + Duration({days: 1})})
+MERGE (airportDateDestination:AIRPORT_DATE_DESTINATION {
+    name: row.Origin + "-" + row.Destination,
+    airport: row.Origin,
+    date: date(dt),
+    destination: row.Destination})
+MERGE (originAirport)-[:HAS_DATE]->(originAirportDate)
+MERGE (destinationAirport)-[:HAS_DATE]->(destinationAirportDate)
+MERGE (originAirportDate)-[:HAS_FLIGHT_TO]->(airportDateDestination)
+CREATE (airportDateDestination)-[:ORIGIN_OF]->(flight)
+CREATE (flight)-[:LANDS_AT]->(destinationAirportDate)
+CREATE (flight)-[:LANDS_AT]->(destinationAirportNextDate);
